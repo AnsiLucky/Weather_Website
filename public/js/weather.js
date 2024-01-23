@@ -1,15 +1,18 @@
+const map = L.map('map');
+
 function setDefaultWeather() {
     const defaultCity = 'London';
     document.getElementById('cityInput').value = defaultCity;
     getWeather();
+    getDefualtLocation();
 }
 
 async function getWeather() {
     const city = document.getElementById('cityInput').value.trim();
+    getRandomPhoto(city);
     getCurrentWeather(city);
     getExtendedForecast(city);
     getCity(city);
-    document.body.style.backgroundImage = `url('https://source.unsplash.com/1600x900/?${city}')`;
 }
 
 async function getCurrentWeather(city) {
@@ -22,7 +25,6 @@ async function getCurrentWeather(city) {
         .catch((error) => currentWeatherResult.innerHTML = `<p class="text-danger">Error: ${error}</p>`)
 
     const { location, current } = currentWeatherData;
-    console.log(currentWeatherData);
 
     currentWeatherResult.innerHTML = `
             <div class="col-md-6">
@@ -41,6 +43,10 @@ async function getCurrentWeather(city) {
                 <img src="${`https:${current.condition.icon}`}" alt="Weather Icon" style="width: 80px; height: 80px;">
             </div>
         `;
+    map.setView([location.lat, location.lon], 8);
+
+    L.marker([location.lat, location.lon]).addTo(map)
+        .bindPopup(city);
 }
 
 async function getExtendedForecast(city) {
@@ -93,7 +99,7 @@ async function getCity(city) {
     cityInfoResult.innerHTML = `
             <div class="mt-4 card">
                 <div class="card-body">
-                    <h5 class="card-title">City Information (API not work with Qazaqstan)</h5>
+                    <h5 class="card-title">City Information</h5>
                     <hr>
                     <p><strong>Name:</strong> ${name}</p>
                     <p><strong>Latitude:</strong> ${latitude}</p>
@@ -178,4 +184,20 @@ function formatTime(date) {
 
 function padZeroes(value) {
     return value < 10 ? `0${value}` : value;
+}
+
+async function getDefualtLocation() {
+    const defaultCity = { name: 'City1', lat: 51.51, lon: -0.13 };
+    map.setView([defaultCity.lat, defaultCity.lon], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker([defaultCity.lat, defaultCity.lon]).addTo(map)
+        .bindPopup(defaultCity.name);
+}
+
+async function getRandomPhoto(city) {
+    document.querySelector('.sub-header').style.backgroundImage = `linear-gradient(rgba(4, 9, 3, 0.7), rgba(4, 9, 3, 0.7)), url('https://source.unsplash.com/1600x900/?${city}')`;
 }
